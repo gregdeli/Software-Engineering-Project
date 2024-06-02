@@ -7,6 +7,8 @@ import java.awt.Color;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import javax.swing.JOptionPane;
+import static my.casheri.LoginUI.increasedSocialRange;
 import social.media.elements.NewPostUI;
 import social.media.elements.PostUI;
 
@@ -22,15 +24,26 @@ public class SocialMediaFeedUI extends javax.swing.JFrame {
         initComponents();
         this.getContentPane().setBackground(Color.decode("#FFFFBA"));
         this.connection = (new Database()).con();
-        try {
-            this.socialMediaFeed = new SocialMediaFeed(100, userId, connection);
-            showPosts(socialMediaFeed.getPosts());
-        } catch (SQLException ex) {
-            System.out.println("Error occurred while creating SocialMediaFeed: " + ex.getMessage());
+        // Ama den einai increased to range kai o user einai o driver me id 1 deikse error gia demonstration
+        if(!increasedSocialRange && userId==1){
+            try{
+                this.socialMediaFeed = new SocialMediaFeed(100, userId, connection);
+                JOptionPane.showMessageDialog(this, "There are no posts available.", "Error", JOptionPane.ERROR_MESSAGE);
+            } catch (SQLException ex){
+                System.out.println("Error occurred while creating SocialMediaFeed: " + ex.getMessage());
+            }
         }
-        // Hide "Create Post" button in passengers
-        if("passenger".equals(this.getUserType())){
-            newPostButton.setVisible(false);
+        else{
+            try {
+                this.socialMediaFeed = new SocialMediaFeed(100, userId, connection);
+                showPosts(socialMediaFeed.getPosts());
+            } catch (SQLException ex) {
+                System.out.println("Error occurred while creating SocialMediaFeed: " + ex.getMessage());
+            }
+            // Hide "Create Post" button in passengers
+            if("passenger".equals(this.getUserType())){
+                newPostButton.setVisible(false);
+            }
         }
     }
     
@@ -61,6 +74,7 @@ public class SocialMediaFeedUI extends javax.swing.JFrame {
         newPostButton = new javax.swing.JButton();
         feedScrollPane = new javax.swing.JScrollPane();
         feed = new javax.swing.JPanel();
+        increaseRangeButton = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setMinimumSize(new java.awt.Dimension(296, 455));
@@ -88,19 +102,26 @@ public class SocialMediaFeedUI extends javax.swing.JFrame {
         feed.setLayout(new javax.swing.BoxLayout(feed, javax.swing.BoxLayout.Y_AXIS));
         feedScrollPane.setViewportView(feed);
 
+        increaseRangeButton.setBackground(new java.awt.Color(236, 218, 61));
+        increaseRangeButton.setText("Increase Range");
+        increaseRangeButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                increaseRangeButtonActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
+                .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
-                        .addContainerGap()
                         .addComponent(backButton)
-                        .addGap(0, 0, Short.MAX_VALUE))
-                    .addGroup(layout.createSequentialGroup()
-                        .addContainerGap()
-                        .addComponent(feedScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(increaseRangeButton))
+                    .addComponent(feedScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
             .addGroup(layout.createSequentialGroup()
                 .addGap(95, 95, 95)
@@ -111,7 +132,9 @@ public class SocialMediaFeedUI extends javax.swing.JFrame {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(backButton)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(backButton)
+                    .addComponent(increaseRangeButton))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(feedScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -139,6 +162,11 @@ public class SocialMediaFeedUI extends javax.swing.JFrame {
         newPost.setVisible(true);
         dispose();
     }//GEN-LAST:event_newPostButtonActionPerformed
+
+    private void increaseRangeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_increaseRangeButtonActionPerformed
+        increasedSocialRange = true;
+        showPosts(socialMediaFeed.getPosts());
+    }//GEN-LAST:event_increaseRangeButtonActionPerformed
 
     /**
      * @param args the command line arguments
@@ -179,6 +207,7 @@ public class SocialMediaFeedUI extends javax.swing.JFrame {
     private javax.swing.JButton backButton;
     private javax.swing.JPanel feed;
     private javax.swing.JScrollPane feedScrollPane;
+    private javax.swing.JButton increaseRangeButton;
     private javax.swing.JButton newPostButton;
     // End of variables declaration//GEN-END:variables
 }

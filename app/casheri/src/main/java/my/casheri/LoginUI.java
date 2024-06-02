@@ -10,6 +10,8 @@ import javax.swing.JOptionPane;
 
 
 public class LoginUI extends javax.swing.JFrame {
+    
+    public static boolean increasedSocialRange = false; 
 
     public LoginUI() {
         initComponents();
