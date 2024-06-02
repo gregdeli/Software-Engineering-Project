@@ -50,11 +50,11 @@ public class SocialMediaFeed {
                 double postLong = resultSet.getDouble("post_location_long");
                 GeoPosition postLocation = new GeoPosition(postLat, postLong);
                 
-                String descriprion = resultSet.getString("description");
+                String description = resultSet.getString("description");
                 
                 
                 // Dhmiourgia tou Post Object xwris Driver Object, Trip Object, Passenger array
-                Post post = new Post(postId, postTitle, postPhoto, maxPass, postDate, postLocation, descriprion);
+                Post post = new Post(postId, postTitle, postPhoto, maxPass, postDate, postLocation, description);
                 
                 // Add the Passengers of the post
                 post.setPassengers(connection);

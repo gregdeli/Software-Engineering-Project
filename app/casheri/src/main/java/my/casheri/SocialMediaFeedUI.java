@@ -29,7 +29,7 @@ public class SocialMediaFeedUI extends javax.swing.JFrame {
             System.out.println("Error occurred while creating SocialMediaFeed: " + ex.getMessage());
         }
         // Hide "Create Post" button in passengers
-        if("passenger".equals(socialMediaFeed.getUserType())){
+        if("passenger".equals(this.getUserType())){
             newPostButton.setVisible(false);
         }
     }
@@ -42,6 +42,10 @@ public class SocialMediaFeedUI extends javax.swing.JFrame {
         }
         feed.revalidate();
         feed.repaint();
+    }
+    
+    public String getUserType(){
+        return socialMediaFeed.getUserType();
     }
 
     /**

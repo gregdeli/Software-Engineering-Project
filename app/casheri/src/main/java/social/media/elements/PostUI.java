@@ -39,6 +39,7 @@ public class PostUI extends javax.swing.JPanel {
     private SocialMediaFeedUI socialMediaFeed;
     
     public PostUI(int userId, int postId, String title, LocalDate date, int numPassengers, String postImage, String description, SocialMediaFeedUI socialMediaFeed) {
+        this.userId = userId;
         this.title = title;
         this.postId = postId;
         this.numPassengers = Integer.toString(numPassengers);
@@ -128,7 +129,8 @@ public class PostUI extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void tripPhotoMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tripPhotoMouseClicked
-        PostDetailsUI postDetails = new PostDetailsUI(userId, postId, title, date, numPassengers, imagePath, description);
+        String userType = socialMediaFeed.getUserType();
+        PostDetailsUI postDetails = new PostDetailsUI(userId, postId, title, date, numPassengers, imagePath, description, userType);
         postDetails.setVisible(true);
         socialMediaFeed.setVisible(false);
     }//GEN-LAST:event_tripPhotoMouseClicked

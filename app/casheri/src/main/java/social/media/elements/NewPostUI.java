@@ -28,12 +28,62 @@ public class NewPostUI extends javax.swing.JFrame {
         return null;
     }
     
+    // To kanw stin apo katw methodo 
     public void checkEmptyFields(){
         
     }
     
     public void submitPost(){
+        // Insert trip kai post stin db me vasi ta fields pou sumplirwthikan
+        try{
+            // Collect input data from text fields
+            String title = titleField.getText();
+            // start kai destination den ginontai insert stin db, kanonika tha kaname 
+            // implement tin methodo destinationToCoordinates() gia na paroume coordinates
+            String start = startField.getText(); 
+            String destination = destinationField.getText();
+            String dateTime = dateTimeField.getText();
+            String maxPassengersStr = maxPassengersField.getText();
+            String description = descriptionField.getText();
+            String photoPath = uploadPhotoButton.getText();
+            
+            // Check if any field is empty
+            if (title.equals("Title") || start.equals("Start Location") || destination.equals("Destination") 
+                || dateTime.equals("Date and time (YYYY-MM-DD hh:mm:ss)") ||maxPassengersField.getText().equals("Number of passengers") 
+                || description.isEmpty() || photoPath.equals("Upload a photo")) {
+                JOptionPane.showMessageDialog(this, "Please fill in all fields", "Error", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+            
+            int maxPassengers = Integer.parseInt(maxPassengersStr);
+
+            String insertTripQuery = "INSERT INTO trip(driver_id,date_time,duration,start_latitude,start_longitude,end_latitude,end_longitude,passenger_capacity,repeat_trip)" +
+                                     "VALUES("+userId+",'"+dateTime+"', '"+"00:00:00"+"'," +10.99+", "+10.99+", "+99.99+", "+99.99+", "+maxPassengers+", "+0+")";
+
+            PreparedStatement tripStmt = con.prepareStatement(insertTripQuery, new String[]{"id"});
+            tripStmt.executeUpdate();
+            
+            // Retrieve the generated trip_id
+            int tripId = 0;
+            ResultSet generatedKeys = tripStmt.getGeneratedKeys();
+            if (generatedKeys.next()) {
+                tripId = generatedKeys.getInt(1);
+            }
+            
+            Timestamp currentTimestamp = new Timestamp(System.currentTimeMillis());
+            String insertPostQuery = "INSERT INTO post(driver_id, trip_id, post_datetime, post_location_lat, post_location_long, photo, title, max_passengers, description)" +
+                                      "VALUES("+userId+","+tripId+", '"+currentTimestamp+"'," +10.99+", "+10.99+", '"+photoPath+"', '"+title+"', "+maxPassengers+", '"+description+"')";
+            
+            con.createStatement().executeUpdate(insertPostQuery);
+            
+            // Go back to the Feed
+            SocialMediaFeedUI socialMediaFeed = new SocialMediaFeedUI(userId);
+            socialMediaFeed.setVisible(true);
+            dispose();
         
+        }catch(Exception ex){
+            ex.printStackTrace();
+        }
     }
     
     /**
@@ -51,7 +101,7 @@ public class NewPostUI extends javax.swing.JFrame {
         titleField = new javax.swing.JTextField();
         destinationField = new javax.swing.JTextField();
         dateTimeField = new javax.swing.JTextField();
-        numPassengersField = new javax.swing.JTextField();
+        maxPassengersField = new javax.swing.JTextField();
         jScrollPane1 = new javax.swing.JScrollPane();
         descriptionField = new javax.swing.JTextArea();
         createPostButton = new javax.swing.JButton();
@@ -122,18 +172,18 @@ public class NewPostUI extends javax.swing.JFrame {
             }
         });
 
-        numPassengersField.setText("Number of passengers");
-        numPassengersField.addFocusListener(new java.awt.event.FocusAdapter() {
+        maxPassengersField.setText("Number of passengers");
+        maxPassengersField.addFocusListener(new java.awt.event.FocusAdapter() {
             public void focusGained(java.awt.event.FocusEvent evt) {
-                numPassengersFieldFocusGained(evt);
+                maxPassengersFieldFocusGained(evt);
             }
             public void focusLost(java.awt.event.FocusEvent evt) {
-                numPassengersFieldFocusLost(evt);
+                maxPassengersFieldFocusLost(evt);
             }
         });
-        numPassengersField.addActionListener(new java.awt.event.ActionListener() {
+        maxPassengersField.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                numPassengersFieldActionPerformed(evt);
+                maxPassengersFieldActionPerformed(evt);
             }
         });
 
@@ -196,7 +246,7 @@ public class NewPostUI extends javax.swing.JFrame {
                             .addComponent(jLabel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addComponent(destinationField)
                             .addComponent(dateTimeField)
-                            .addComponent(numPassengersField)
+                            .addComponent(maxPassengersField)
                             .addComponent(jLabel3)
                             .addComponent(jScrollPane1)
                             .addComponent(uploadPhotoButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -221,7 +271,7 @@ public class NewPostUI extends javax.swing.JFrame {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(dateTimeField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(11, 11, 11)
-                .addComponent(numPassengersField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(maxPassengersField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(10, 10, 10)
                 .addComponent(uploadPhotoButton, javax.swing.GroupLayout.PREFERRED_SIZE, 19, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -244,57 +294,7 @@ public class NewPostUI extends javax.swing.JFrame {
     }//GEN-LAST:event_backButtonActionPerformed
 
     private void createPostButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_createPostButtonActionPerformed
-        // Insert trip kai post stin db me vasi ta fields pou sumplirwthikan
-        try{
-            // Collect input data from text fields
-            String title = titleField.getText();
-            // start kai destination den ginontai insert stin db, kanonika tha kaname 
-            // implement tin methodo destinationToCoordinates() gia na paroume coordinates
-            String start = startField.getText(); 
-            String destination = destinationField.getText();
-            String dateTime = dateTimeField.getText();
-            String numPassengersStr = numPassengersField.getText();
-            String description = descriptionField.getText();
-            String photoPath = uploadPhotoButton.getText();
-            
-            // Check if any field is empty
-            if (title.equals("Title") || start.equals("Start Location") || destination.equals("Destination") 
-                || dateTime.equals("Date and time (YYYY-MM-DD hh:mm:ss)") ||numPassengersField.getText().equals("Number of passengers") 
-                || description.isEmpty() || photoPath.equals("Upload a photo")) {
-                JOptionPane.showMessageDialog(this, "Please fill in all fields", "Error", JOptionPane.ERROR_MESSAGE);
-                return;
-            }
-            
-            int numPassengers = Integer.parseInt(numPassengersStr);
-
-            String insertTripQuery = "INSERT INTO trip(driver_id,date_time,duration,start_latitude,start_longitude,end_latitude,end_longitude,passenger_capacity,repeat_trip)" +
-                                     "VALUES("+userId+",'"+dateTime+"', '"+"00:00:00"+"'," +10.99+", "+10.99+", "+99.99+", "+99.99+", "+numPassengers+", "+0+")";
-
-            PreparedStatement tripStmt = con.prepareStatement(insertTripQuery, new String[]{"id"});
-            tripStmt.executeUpdate();
-            
-            // Retrieve the generated trip_id
-            int tripId = 0;
-            ResultSet generatedKeys = tripStmt.getGeneratedKeys();
-            if (generatedKeys.next()) {
-                tripId = generatedKeys.getInt(1);
-            }
-            
-            Timestamp currentTimestamp = new Timestamp(System.currentTimeMillis());
-            String insertPostQuery = "INSERT INTO post(driver_id, trip_id, post_datetime, post_location_lat, post_location_long, photo, title, max_passengers, description)" +
-                                      "VALUES("+userId+","+tripId+", '"+currentTimestamp+"'," +10.99+", "+10.99+", '"+photoPath+"', '"+title+"', "+numPassengers+", '"+description+"')";
-            
-            con.createStatement().executeUpdate(insertPostQuery);
-            
-            // Go back to the Feed
-            SocialMediaFeedUI socialMediaFeed = new SocialMediaFeedUI(userId);
-            socialMediaFeed.setVisible(true);
-            dispose();
-        
-        }catch(Exception ex){
-            ex.printStackTrace();
-        }
-         
+        submitPost();
     }//GEN-LAST:event_createPostButtonActionPerformed
 
     private void titleFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_titleFieldActionPerformed
@@ -341,21 +341,21 @@ public class NewPostUI extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_dateTimeFieldFocusLost
 
-    private void numPassengersFieldFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_numPassengersFieldFocusGained
-        if (numPassengersField.getText().equals("Number of passengers")) {
-            numPassengersField.setText("");
+    private void maxPassengersFieldFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_maxPassengersFieldFocusGained
+        if (maxPassengersField.getText().equals("Number of passengers")) {
+            maxPassengersField.setText("");
         }
-    }//GEN-LAST:event_numPassengersFieldFocusGained
+    }//GEN-LAST:event_maxPassengersFieldFocusGained
 
-    private void numPassengersFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_numPassengersFieldFocusLost
-        if (numPassengersField.getText().isEmpty()) {
-            numPassengersField.setText("Number of passengers");
+    private void maxPassengersFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_maxPassengersFieldFocusLost
+        if (maxPassengersField.getText().isEmpty()) {
+            maxPassengersField.setText("Number of passengers");
         }
-    }//GEN-LAST:event_numPassengersFieldFocusLost
+    }//GEN-LAST:event_maxPassengersFieldFocusLost
 
-    private void numPassengersFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_numPassengersFieldActionPerformed
+    private void maxPassengersFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_maxPassengersFieldActionPerformed
         // TODO add your handling code here:
-    }//GEN-LAST:event_numPassengersFieldActionPerformed
+    }//GEN-LAST:event_maxPassengersFieldActionPerformed
 
     private void uploadPhotoButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_uploadPhotoButtonActionPerformed
         // Open a file choser window to pick an image
@@ -455,7 +455,7 @@ public class NewPostUI extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JTextField numPassengersField;
+    private javax.swing.JTextField maxPassengersField;
     private javax.swing.JTextField startField;
     private javax.swing.JTextField titleField;
     private javax.swing.JButton uploadPhotoButton;

@@ -1,6 +1,10 @@
 package social.media.elements;
 
+import com.mycompany.casheri.Database;
 import java.awt.Color;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.Statement;
 import my.casheri.SocialMediaFeedUI;
 
 public class PostDetailsUI extends javax.swing.JFrame {
@@ -8,7 +12,10 @@ public class PostDetailsUI extends javax.swing.JFrame {
     /**
      * Creates new form PostDetailsUI
      */
+    private Connection con = (new Database()).con();
+    
     private int userId;
+    private String userType;
     private int postId;
     private String title;
     private String date;
@@ -16,8 +23,11 @@ public class PostDetailsUI extends javax.swing.JFrame {
     private String imagePath;
     private String description;
     
-    public PostDetailsUI(int userId, int postId, String title, String date, String numPassengers, String imagePath, String description){
+    private int maxPassengerNum;
+    
+    public PostDetailsUI(int userId, int postId, String title, String date, String numPassengers, String imagePath, String description, String userType){
         this.userId = userId;
+        this.userType = userType;
         this.postId = postId;
         this.title = title;
         this.date = date;
@@ -27,11 +37,55 @@ public class PostDetailsUI extends javax.swing.JFrame {
         initComponents();
         this.getContentPane().setBackground(Color.decode("#FFFFBA"));
         photo.setIcon(ImageUtil.getScaledIcon(this.imagePath, 245, 133));
+        
+        // Hide "Join" button in drivers and if the max passenger threshold has been reached
+        hideJoin();
+        
+    }
+    
+    public void hideJoin(){
+        if("driver".equals(userType)){
+            joinButton.setVisible(false);
+        }
+        // An o user einai passenger
+        else{
+            // Get the number of passengers on the post already
+            String query = "select max_passengers from post where id="+postId+"";
+            Statement st;
+            ResultSet rs;
+
+            try {
+                st = con.createStatement();
+                rs = st.executeQuery(query);
+                rs.next();
+                this.maxPassengerNum = rs.getInt("max_passengers");
+                
+                if((Integer.parseInt(numPassengers) + 1) > maxPassengerNum){
+                    joinButton.setVisible(false);
+                }
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
+        }
+        
     }
     
     // Methodos gia prosthiki tou passenger sto Post
+    // Tha ginei insert ston pinaka post_passenger
     public void joinPostTrip(){
-        // tha ginetai klisi tis addPassenger() tis Post klasis
+        // Insert ston pinaka post_passengers
+        String query = "INSERT INTO post_passenger(post_id, passenger_id)" +
+                        "VALUES("+postId+","+userId+")";
+        try{
+            con.createStatement().executeUpdate(query);
+            
+            // Go back to the feed
+            SocialMediaFeedUI socialMediaFeed = new SocialMediaFeedUI(userId);
+            socialMediaFeed.setVisible(true);
+            dispose();
+        }catch(Exception ex){
+            ex.printStackTrace();
+        }
     }
     
     // Methodos gia tin eidopoiisi tou odigou tou Post otan prostethei passenger
@@ -54,7 +108,7 @@ public class PostDetailsUI extends javax.swing.JFrame {
         numPassLabel = new javax.swing.JLabel();
         photo = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
-        jButton1 = new javax.swing.JButton();
+        joinButton = new javax.swing.JButton();
         jScrollPane1 = new javax.swing.JScrollPane();
         jTextArea1 = new javax.swing.JTextArea();
 
@@ -76,8 +130,13 @@ public class PostDetailsUI extends javax.swing.JFrame {
 
         jLabel2.setText("Description");
 
-        jButton1.setBackground(new java.awt.Color(236, 218, 61));
-        jButton1.setText("Join");
+        joinButton.setBackground(new java.awt.Color(236, 218, 61));
+        joinButton.setText("Join");
+        joinButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                joinButtonActionPerformed(evt);
+            }
+        });
 
         jTextArea1.setColumns(20);
         jTextArea1.setLineWrap(true);
@@ -95,11 +154,11 @@ public class PostDetailsUI extends javax.swing.JFrame {
                         .addContainerGap()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(layout.createSequentialGroup()
-                                .addComponent(titleLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 105, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 9, Short.MAX_VALUE)
-                                .addComponent(dateLabel)
+                                .addComponent(titleLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                 .addGap(18, 18, 18)
-                                .addComponent(numPassLabel))
+                                .addComponent(dateLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 43, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(18, 18, 18)
+                                .addComponent(numPassLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 55, javax.swing.GroupLayout.PREFERRED_SIZE))
                             .addComponent(photo, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addGroup(layout.createSequentialGroup()
                                 .addComponent(backButton)
@@ -108,14 +167,14 @@ public class PostDetailsUI extends javax.swing.JFrame {
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(layout.createSequentialGroup()
                                 .addGap(97, 97, 97)
-                                .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 86, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addComponent(joinButton, javax.swing.GroupLayout.PREFERRED_SIZE, 86, javax.swing.GroupLayout.PREFERRED_SIZE))
                             .addGroup(layout.createSequentialGroup()
                                 .addGap(106, 106, 106)
                                 .addComponent(jLabel2))
                             .addGroup(layout.createSequentialGroup()
                                 .addContainerGap()
                                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 263, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                        .addGap(0, 0, Short.MAX_VALUE)))
+                        .addGap(0, 9, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -135,7 +194,7 @@ public class PostDetailsUI extends javax.swing.JFrame {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 142, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(jButton1)
+                .addComponent(joinButton)
                 .addContainerGap())
         );
 
@@ -148,6 +207,10 @@ public class PostDetailsUI extends javax.swing.JFrame {
         socialMediaFeed.setVisible(true);
         dispose();
     }//GEN-LAST:event_backButtonActionPerformed
+
+    private void joinButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_joinButtonActionPerformed
+        joinPostTrip();
+    }//GEN-LAST:event_joinButtonActionPerformed
 
     /**
      * @param args the command line arguments
@@ -187,10 +250,10 @@ public class PostDetailsUI extends javax.swing.JFrame {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton backButton;
     private javax.swing.JLabel dateLabel;
-    private javax.swing.JButton jButton1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JTextArea jTextArea1;
+    private javax.swing.JButton joinButton;
     private javax.swing.JLabel numPassLabel;
     private javax.swing.JLabel photo;
     private javax.swing.JLabel titleLabel;
