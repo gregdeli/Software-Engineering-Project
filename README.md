@@ -1,5 +1,17 @@
 # Software Engineering Project 'Casheri'
 
+## Project Overview
+
+This repository contains the documentation and implementation of a **Software Engineering Project** completed as part of the **Software Technology** course at the **University of Patras**. The project focused on developing a software application while adhering to industry-standard software engineering practices.
+
+The project involved key aspects such as:
+
+- **Requirements Gathering and Analysis**: Identifying and documenting the system requirements.
+- **System Design**: Creating UML diagrams to design the system architecture and components.
+- **Implementation**: Developing the application using **Java**.
+- **Testing and Quality Assurance**: Conducting rigorous testing to ensure functionality and quality.
+- **Project Management and Teamwork**: Organizing tasks, collaborating with team members, and following best practices in software development.
+
 ## Requirements
 
 - NetBeans v21
